@@ -1,3 +1,7 @@
+
+  /*INF1805
+  Filipe Ferraz Franco e Costa 1711109
+  Rodrigo Pumar Alves de Souza 1221007*/
 #define LED_PIN 13
 #define BUT_PIN A1
 #define KEY2 A2
@@ -15,7 +19,7 @@ void setup() {
   unsigned long old2 = 0;
   int but1 = 1;
   int but2 = 1;
-void loop() {
+  void loop() {
   unsigned long now = millis();
   unsigned long now2 = millis();
   if(now >= old + 1000 + speed1) {
@@ -52,15 +56,4 @@ void loop() {
       but2=0;
     }    
   }
-  
-  /*if(!but1) {
-    speed1 = speed1 - 500;
-    
-    delay(1000);
-  }
-  if(!but2) {
-    speed1 = speed1 + 500;
-    delay(1000);
-  }*/
-
 }
