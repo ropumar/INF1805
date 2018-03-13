@@ -21,15 +21,14 @@ void setup() {
   int but2 = 1;
   void loop() {
   unsigned long now = millis();
-  unsigned long now2 = millis();
   if(now >= old + 1000 + speed1) {
     old = now;
     state = !state;
     digitalWrite(LED_PIN, state);
   }
 
-  if(now2 >= old2 + 500) {
-    old2 = now2;
+  if(now >= old2 + 500) {
+    old2 = now;
     
     if(!but1&&!but2) {
       while(1);
