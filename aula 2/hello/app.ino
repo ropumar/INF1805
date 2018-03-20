@@ -12,6 +12,8 @@ static unsigned long b1=0;
 static unsigned long b=0;
 void appinit(void) {
   pinMode(KEY1,INPUT_PULLUP);
+  pinMode(KEY2,INPUT_PULLUP);
+  pinMode(KEY3,INPUT_PULLUP);
   button_listen(0); //listen A1
   pinMode(LED1, OUTPUT); // Enable pin 10 for digital output
   digitalWrite(LED1, 1);
