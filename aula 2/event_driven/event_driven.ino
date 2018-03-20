@@ -36,4 +36,8 @@ void loop () {
       if(!digitalRead(A2)){
         button_changed (1,1);
       }
+     if (pin_used[2]==1)
+      if(!digitalRead(A3)){
+        button_changed (2,1);
+      }
     }
