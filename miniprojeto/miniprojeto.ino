@@ -1,143 +1,54 @@
-/* FILE:    ARD_Multifunction_Shield_Seven_Segment_Example
-   DATE:    28/05/14
-   VERSION: 0.1
-   
-REVISIONS:
-
-28/05/14 Created version 0.1
-
-This is an example of how to use the 4 digit seven segment display on the Hobby 
-Components Arduino compatible Multi Function experimenter shield (HCARDU0085).
-
-This example sketch will display a decimal number on the seven segment LED display 
-which will increment by one wever 100ms.
-
-You may copy, alter and reuse this code in any way you like, but please leave
-reference to HobbyComponents.com in your comments if you redistribute this code.
-This software may not be used for the purpose of promoting or selling products 
-that directly compete with Hobby Components Ltd's own range of products.
-
-THIS SOFTWARE IS PROVIDED "AS IS". HOBBY COMPONENTS MAKES NO WARRANTIES, WHETHER
-EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE, ACCURACY OR LACK OF NEGLIGENCE.
-HOBBY COMPONENTS SHALL NOT, IN ANY CIRCUMSTANCES, BE LIABLE FOR ANY DAMAGES,
-INCLUDING, BUT NOT LIMITED TO, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES FOR ANY
-REASON WHATSOEVER.
-*/
-
+  /*INF1805
+  Filipe Ferraz Franco e Costa 1711109
+  Rodrigo Pumar Alves de Souza 1221007*/
+#include "miniprojeto.h"
+#include "app.h"
 #include "pindefs.h"
 
-/* Define shift register pins used for seven segment display */
-#define LATCH_DIO 4
-#define CLK_DIO 7
-#define DATA_DIO 8
- 
-/* Segment byte maps for numbers 0 to 9 */
-const byte SEGMENT_MAP[] = {0xC0,0xF9,0xA4,0xB0,0x99,0x92,0x82,0xF8,0X80,0X90};
-/* Byte maps to select digit 1 to 4 */
-const byte SEGMENT_SELECT[] = {0xF1,0xF2,0xF4,0xF8};
+static int pin_used[3] = {0,0,0};
+static unsigned long tempo = 0;
+static unsigned long old = 0;
+static int pin_changed[3] = {1,1,1};
 
-
-unsigned long Cur_ms_Count; // Stores the current time in ms
-unsigned long Last_ms_Count; // Stores the last time in ms the counter was last updated
-int Count; // Stores the value that will be displayed
-int Alarme = 0; //Hora do alarme
-int Mode = 0; //Modo relogio = 0, set alarme = 1, set relogio = 2
-
-void setup ()
-{
-  /* Set DIO pins to outputs */
-  pinMode(LATCH_DIO,OUTPUT);
-  pinMode(CLK_DIO,OUTPUT);
-  pinMode(DATA_DIO,OUTPUT); 
-
-  pinMode(KEY1,INPUT_PULLUP);
-  pinMode(KEY2,INPUT_PULLUP);
-  pinMode(KEY3,INPUT_PULLUP);
-
-  pinMode(LED4,OUTPUT);
-  pinMode(LED3,OUTPUT);
-  pinMode(LED2,OUTPUT);
-
-  digitalWrite(LED4, 0);
-  digitalWrite(LED3, 1);
-  digitalWrite(LED2, 1);
-  
-  /* Initiliase the registers used to store the crrent time and count */
-  Cur_ms_Count = millis();
-  Last_ms_Count = 0;
-  Count = 0;
+void button_listen (int pin){
+  pin_used[pin]=1;
 }
 
-/* Main program */
-void loop()
-{
- 
-  /* Get how much time has passed in milliseconds */
-  Cur_ms_Count = millis();
-  
-  /* If 100ms has passed then add one to the counter */
-  if(Cur_ms_Count - Last_ms_Count > 10) //60000
-  {
+void timer_set (int ms){
+  tempo= (unsigned long) ms;
+}
 
-    Last_ms_Count = Cur_ms_Count;
 
-    Count++;
-    if(Count%100==60)
-    {
-      Count = Count+40;
-    } else if(Count/100==24)
-    {
-      Count = 0;
+void setup(){
+  appinit();
+}
+
+void loop () {
+  unsigned long now = millis();
+  if(now >= old + tempo){
+    old = now;
+    timer_expired();
     }
-  }
-  
-  if(!digitalRead(KEY1))
-  {
-    if(Mode<3)
-      Mode++;
-    else
-      Mode=0;
-    switch (Mode){
-      case 0:
-        digitalWrite(LED4, 0);
-        //digitalWrite(LED3, 1);
-        digitalWrite(LED2, 1);
-        break;
-       case 1:
-        digitalWrite(LED4, 1);
-        digitalWrite(LED3, 0);
-        //digitalWrite(LED2, 1);
-        break;
-       case 2:
-        //digitalWrite(LED4, 1);
-        digitalWrite(LED3, 1);
-        digitalWrite(LED2, 0);
-        break;
+ 
+   if (pin_used[0]==1){
+    if(pin_changed[0]!=digitalRead(A1)){
+      pin_changed[0]=digitalRead(A1);
+      button_changed (0,pin_changed[0]);
+      }
+   }
+   
+   if (pin_used[1]==1){
+    if(pin_changed[1]!=digitalRead(A2)){
+      pin_changed[1]=digitalRead(A2);
+      button_changed (0,pin_changed[1]);
+      }
+   }
+   
+   if (pin_used[2]==1){
+    if(pin_changed[2]!=digitalRead(A3)){
+      pin_changed[2]=digitalRead(A3);
+      button_changed (0,pin_changed[2]);
+      }
     }
-  }
-  /* Update the display with the current counter value */
-  if(Mode==0) //relogio
-    WriteNumber(Count);
-  else if(Mode==1) //set alarme
-    WriteNumber(Alarme);
-}
-
-
-/* Write a decimal number between 0 and 9999 to the display */
-void WriteNumber(int Number)
-{
-  WriteNumberToSegment(0 , Number / 1000);
-  WriteNumberToSegment(1 , (Number / 100) % 10);
-  WriteNumberToSegment(2 , (Number / 10) % 10);
-  WriteNumberToSegment(3 , Number % 10);
-}
-
-/* Wite a ecimal number between 0 and 9 to one of the 4 digits of the display */
-void WriteNumberToSegment(byte Segment, byte Value)
-{
-  digitalWrite(LATCH_DIO,LOW); 
-  shiftOut(DATA_DIO, CLK_DIO, MSBFIRST, SEGMENT_MAP[Value]-0x80);
-  shiftOut(DATA_DIO, CLK_DIO, MSBFIRST, SEGMENT_SELECT[Segment] );
-  digitalWrite(LATCH_DIO,HIGH);    
+  loop_action();
 }
