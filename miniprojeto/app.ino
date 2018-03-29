@@ -30,9 +30,11 @@ const byte SEGMENT_MAP[] = {0xC0,0xF9,0xA4,0xB0,0x99,0x92,0x82,0xF8,0X80,0X90};
 const byte SEGMENT_SELECT[] = {0xF1,0xF2,0xF4,0xF8};
 
 static int Hora;
+static int Seg=0;
 static int Hora_Set;
 static int Hora_Set_Old;
 static int Alarme = 0; //Hora do alarme
+static int Alarme_Old = 0; //Hora do alarme
 static int Mode = 0; //Modo relogio = 0, set alarme = 1, set relogio = 2
 static int Toque = 0;
 static int Snooze = 0;
@@ -47,7 +49,6 @@ static int value = LOW;
 static int cal[4]={1,1,1,1};
 
 void appinit(void) {
-  Serial.begin(9600);
   /* Set DIO pins to outputs */
   pinMode(LATCH_DIO,OUTPUT);
   pinMode(CLK_DIO,OUTPUT);
@@ -103,8 +104,13 @@ void button_changed(int p, int v) {
             digitalWrite(LED3, 0);
             break;
            case 2:
+            if(Alarme_Old!=Alarme)
+            {
+              Alarme_Old=Alarme;
+              AlarmeFlag=1;
+              digitalWrite(LED1, !AlarmeFlag);
+            }
             Hora_Set_Old=Hora_Set;
-            Serial.print("horasetold");
             digitalWrite(LED3, 1);
             digitalWrite(LED2, 0);
             break;
@@ -128,13 +134,11 @@ void button_changed(int p, int v) {
               Toque=0;
           break;
           case 1:
-            Serial.print("hora++");
               Alarme=Alarme+100;
               if(Alarme/100==24)
                 Alarme=Alarme-2400;
           break;
           case 2:
-            Serial.print("hora++");
               Hora_Set=Hora_Set+100;
               if(Hora_Set/100==24)
                 Hora_Set=Hora_Set-2400;
@@ -156,13 +160,11 @@ void button_changed(int p, int v) {
           }
           break;
           case 1:
-           Serial.print("minuto++");
               Alarme++;
               if(Alarme%100==60)
                 Alarme=Alarme-60;
           break;
           case 2:
-              Serial.print("minuto++");
               Hora_Set++;
               if(Hora_Set%100==60)
                 Hora_Set=Hora_Set-60;
@@ -173,27 +175,30 @@ void button_changed(int p, int v) {
 }  
 
 void timer_expired(void) {
-   Hora++;
-   if(Mode!=2){
-    Hora_Set=Hora;
+   Seg++;
+   if(Seg==60){
+    Hora++;
+    Seg=0;
    }
-   if(Hora%100==60)
-   {
-     Hora = Hora+40;
-   } else if(Hora/100==24)
-   {
-     Hora = 0;
-   }
-   if(AlarmeFlag==1&&Hora==Alarme&&Mode==0){
-      digitalWrite(BUZZER_DIO, ON);
-      Toque=1;
-   }
-   else if(AlarmeFlag==1&&SnoozeFlag==1&&Hora==Snooze&&Mode==0)
-   {
-      digitalWrite(BUZZER_DIO, ON);
-      Toque=1;
-   }
-   
+     if(Mode!=2){
+      Hora_Set=Hora;
+     }
+     if(Hora%100==60)
+     {
+       Hora = Hora+40;
+     } else if(Hora/100==24)
+     {
+       Hora = 0;
+     }
+     if(AlarmeFlag==1&&Hora==Alarme&&Mode==0){
+        digitalWrite(BUZZER_DIO, ON);
+        Toque=1;
+     }
+     else if(AlarmeFlag==1&&SnoozeFlag==1&&Hora==Snooze&&Mode==0)
+     {
+        digitalWrite(BUZZER_DIO, ON);
+        Toque=1;
+     }   
 }
 
 void loop_action(void){
