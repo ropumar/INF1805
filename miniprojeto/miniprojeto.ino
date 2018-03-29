@@ -40,14 +40,14 @@ void loop () {
    if (pin_used[1]==1){
     if(pin_changed[1]!=digitalRead(A2)){
       pin_changed[1]=digitalRead(A2);
-      button_changed (0,pin_changed[1]);
+      button_changed (1,pin_changed[1]);
       }
    }
    
    if (pin_used[2]==1){
     if(pin_changed[2]!=digitalRead(A3)){
       pin_changed[2]=digitalRead(A3);
-      button_changed (0,pin_changed[2]);
+      button_changed (2,pin_changed[2]);
       }
     }
   loop_action();
