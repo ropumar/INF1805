@@ -1,6 +1,7 @@
   /*INF1805
   Filipe Ferraz Franco e Costa 1711109
-  Rodrigo Pumar Alves de Souza 1221007*/
+  Rodrigo Pumar Alves de Souza 1221007
+  */
 #include "miniprojeto.h"
 #include "app.h"
 #include "pindefs.h"

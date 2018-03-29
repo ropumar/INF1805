@@ -35,7 +35,7 @@ static int Hora_Set;
 static int Hora_Set_Old;
 static int Alarme = 0; //Hora do alarme
 static int Alarme_Old = 0; //Hora do alarme
-static int Mode = 0; //Modo relogio = 0, set alarme = 1, set relogio = 2
+static int Mode = 2; //Modo relogio = 0, set alarme = 1, set relogio = 2
 static int Toque = 0;
 static int Snooze = 0;
 static int SnoozeFlag = 0;
@@ -49,6 +49,7 @@ static int value = LOW;
 static int cal[4]={1,1,1,1};
 
 void appinit(void) {
+  Serial.begin(9600);
   /* Set DIO pins to outputs */
   pinMode(LATCH_DIO,OUTPUT);
   pinMode(CLK_DIO,OUTPUT);
@@ -67,9 +68,9 @@ void appinit(void) {
   pinMode(LED2,OUTPUT);
   pinMode(LED1,OUTPUT);
 
-  digitalWrite(LED4, 0);
+  digitalWrite(LED4, 1);
   digitalWrite(LED3, 1);
-  digitalWrite(LED2, 1);
+  digitalWrite(LED2, 0);
   digitalWrite(LED1, 1);
 
   /* Initiliase the registers used to store the crrent time and count */
@@ -94,8 +95,10 @@ void button_changed(int p, int v) {
         }
         switch (Mode){
           case 0:
-            if(Hora_Set_Old!=Hora_Set)
+            if(Hora_Set_Old!=Hora_Set){
               Hora=Hora_Set;
+              Seg=0;
+            }
             digitalWrite(LED4, 0);
             digitalWrite(LED2, 1);
             break;
@@ -176,10 +179,10 @@ void button_changed(int p, int v) {
 
 void timer_expired(void) {
    Seg++;
+   Serial.print(Seg);
    if(Seg==60){
     Hora++;
     Seg=0;
-   }
      if(Mode!=2){
       Hora_Set=Hora;
      }
@@ -198,7 +201,8 @@ void timer_expired(void) {
      {
         digitalWrite(BUZZER_DIO, ON);
         Toque=1;
-     }   
+     }  
+   } 
 }
 
 void loop_action(void){
