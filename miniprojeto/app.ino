@@ -189,9 +189,9 @@ void timer_expired(void) {
      if(Hora%100==60)
      {
        Hora = Hora+40;
-     } else if(Hora/100==24)
+     } if(Hora/100==24)
      {
-       Hora = 0;
+       Hora = Hora - 2400;
      }
      if(AlarmeFlag==1&&Hora==Alarme&&Mode==0){
         digitalWrite(BUZZER_DIO, ON);
