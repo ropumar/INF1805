@@ -124,6 +124,7 @@ void button_changed(int p, int v) {
       if(v==0)
         switch(Mode){
           case 0:
+          if (Toque==1){
             Snooze=Hora+5;
             if(Snooze%100==60)
              {
@@ -135,6 +136,7 @@ void button_changed(int p, int v) {
               digitalWrite(BUZZER_DIO, OFF);
               SnoozeFlag=1;
               Toque=0;
+          }
           break;
           case 1:
               Alarme=Alarme+100;
