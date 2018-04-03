@@ -3,10 +3,10 @@
 --Rodrigo Pumar Alves de Souza 1221007
 
 function love.load()
-  a=retangulo(50,200,200,150)
-  b=retangulo(300,200,200,150)
-  c=retangulo(300,50,200,150)
-  ret={a,b,c}
+  ret={}
+  for i=1, 4 do
+    ret[i]=retangulo(100*(i-1)+50,100*(i-1)+50,200,150)
+  end
 end
 
 function naimagem (mx, my, x, y, w ,h) 
@@ -24,7 +24,8 @@ function retangulo (x,y,w,h)
       function (key)
           local mx, my=love.mouse.getPosition()
           if key == 'b' and naimagem (mx,my, rx, ry, rw, rh) then
-             ry = 200
+             ry = originaly
+             rx = originalx
           end
           if key == "down" and naimagem (mx,my, rx, ry, rw, rh) then
             ry = ry + 10
