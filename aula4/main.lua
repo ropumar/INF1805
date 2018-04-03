@@ -1,9 +1,8 @@
--- renomear para main.lua
+-- INF1805
+--Filipe Ferraz Franco e Costa 1711109
+--Rodrigo Pumar Alves de Souza 1221007
 
 function love.load()
-  --x = 50 y = 200
-  --w = 200 h = 150
-
   a=retangulo(50,200,200,150)
   b=retangulo(300,200,200,150)
   c=retangulo(300,50,200,150)
@@ -38,16 +37,6 @@ function retangulo (x,y,w,h)
 end
 
 function love.keypressed(key)
---  local mx, my = love.mouse.getPosition() 
---  if key == 'b' and naimagem (mx,my, x, y) then
---     y = 200
---  end
---  if key == "down" and naimagem (mx,my, x, y) then
---    y = y + 10
---  end
---  if key == "right" and naimagem (mx,my, x, y) then
---    x = x + 10
---  end
   for i = 1, #ret do
     ret[i].keypressed(key)
   end
@@ -55,12 +44,9 @@ end
 
 function love.update (dt)
   local mx, my = love.mouse.getPosition() 
-  --ret1.update()
-  --ret2.update()
 end
 
 function love.draw ()
-  --love.graphics.rectangle("line", x, y, w, h)
  for i = 1, #ret do
    ret[i].draw()
  end
