@@ -49,22 +49,23 @@ function mqttcb(topic, message)
 end
 
 function love.keypressed(key)
-  if key == 'a' then
-    local mx, my=love.mouse.getPosition()
-    mqtt_client:publish("apertou-tecla", "{".."a".."}".."{"..mx.."}".."{"..my.."}")
-  end
+  local mx, my=love.mouse.getPosition()
+  mqtt_client:publish("apertou-tecla", "{"..key.."}".."{"..mx.."}".."{"..my.."}")
 end
 
 function love.load()
-  controle = false
+
+  controle = true
   mqtt_client = mqtt.client.create("test.mosquitto.org", 1883, mqttcb)
   mqtt_client:connect("1221007")
-  mqtt_client:subscribe({"apertou-tecla"})
+  --mqtt_client:subscribe({"apertou-tecla"})
+  ret = retangulo (10,10,200,150) 
 end
+
 
 function love.draw()
    if controle then
-     love.graphics.rectangle("line", 10, 10, 200, 150)
+     ret.draw()
    end
 end
 
