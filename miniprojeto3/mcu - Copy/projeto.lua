@@ -1,5 +1,9 @@
 sw1 = 1
 sw2 = 2
+but1 = 0
+but2 = 0
+timerstate=1
+
 
 function listap(t)
 
@@ -15,7 +19,6 @@ function listap(t)
     end
     saida=string.sub(saida, 0,-3)
     saida=saida.."\n]\n}\n]]"
-    
     http.post('https://www.googleapis.com/geolocation/v1/geolocate?key=AIzaSyCb99xDgITIsgK-9m9GMnumqKLGAxvR6ww',
   'Content-Type: application/json\r\n',saida,
   function(code, data)
@@ -26,7 +29,6 @@ function listap(t)
     end
   end)
     print(saida)
-    publica(cliente,"localizacao")
 end
 
 
@@ -46,7 +48,7 @@ function novaInscricao (c)
     print("localizacao")
     wifi.sta.getap(listap)
     print("teste")
-
+    publica(cliente,"localizacao")
 
   end
   c:on("message", novamsg)
@@ -76,7 +78,45 @@ gpio.mode(sw1,gpio.INT,gpio.PULLUP)
 gpio.mode(sw2,gpio.INT,gpio.PULLUP)
 
 function newpincb (sw)
+  
+   
+  local delay = 500000
+  local last = 0
+  return
+  function (level, timestamp)
+    local now = tmr.now()
+    if now - last < delay then
+      return
+    end
+    if(sw==1) then
+      but1=timestamp
+    else
+      but2=timestamp
+    end
+    if(math.abs(but1 - but2) < delay) then
+      if(timerstate==1) then
+        tmr.unregister(timerId)
+        timerstate=0
+      end
+      return
+    end
+    last = now
+    if(sw==1) then
       publica(cliente, sw)
+    end
+  end
 end
+
+-- Blink using timer alarm --
+timerId = 0
+
+function alarme()
+  tmr.unregister(timerId)
+  tmr.alarm(timerId, 500, tmr.ALARM_SINGLE, alarme) 
+end
+
+-- timer loop
+tmr.alarm( timerId, 500, tmr.ALARM_AUTO, alarme) 
+
 gpio.trig(sw1, "down", newpincb(sw1))
 gpio.trig(sw2, "down", newpincb(sw2))
