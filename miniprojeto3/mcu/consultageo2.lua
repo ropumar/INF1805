@@ -1,12 +1,4 @@
-http.post('https://www.googleapis.com/geolocation/v1/geolocate?key=AIzaSyCb99xDgITIsgK-9m9GMnumqKLGAxvR6ww',
-  'Content-Type: application/json\r\n',saida,
-  function(code, data)
-    if (code < 0) then
-      print("HTTP request failed :", code)
-    else
-      print(code, data)
-    end
-  end)
+
 
 -- print AP list in old format (format not defined)
 function listap(t)
@@ -27,5 +19,15 @@ function listap(t)
     saida=string.sub(saida, 0,-3)
     saida=saida.."\n]\n}\n]]"
     --print(saida)
+
+    http.post('https://www.googleapis.com/geolocation/v1/geolocate?key=AIzaSyCb99xDgITIsgK-9m9GMnumqKLGAxvR6ww',
+      'Content-Type: application/json\r\n',saida,
+      function(code, data)
+        if (code < 0) then
+          print("HTTP request failed :", code)
+        else
+          print(code, data)
+        end
+      end)
 end
 wifi.sta.getap(listap)

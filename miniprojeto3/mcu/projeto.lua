@@ -1,8 +1,13 @@
 sw1 = 1
 sw2 = 2
+last = tmr.now()
+
+local meuid = "1221007"
+local m = mqtt.Client("clientid " .. meuid, 120)
+
+texto=""
 
 function listap(t)
-
     saida ="[[\n"
     saida=saida.."{\n\"WifiAccessPoints\": [\n"
     for k,v in pairs(t) do
@@ -12,26 +17,28 @@ function listap(t)
       signalStrength = v:sub(v:find("-"),v:find(",",v:find("-")+1)-1)
       
       saida=saida.."\t{\n\t\t\"macAddress\": \"".. macAdress.."\",\n\t\t\"signalStrength\": "..signalStrength.. ",\n\t\t\"channel\": "..channel.."\n\t},\n"
+      
+      --print("\nSSID = ", k, "\tmacAdress = ",macAdress,"\tChannel = ",channel,"\tSignalStrength = ",signalStrength,"\n")
+      
+      --print(k.." : "..v, "\n")
     end
     saida=string.sub(saida, 0,-3)
     saida=saida.."\n]\n}\n]]"
-    
+    --print(saida)
+
     http.post('https://www.googleapis.com/geolocation/v1/geolocate?key=AIzaSyCb99xDgITIsgK-9m9GMnumqKLGAxvR6ww',
-  'Content-Type: application/json\r\n',saida,
-  function(code, data)
-    if (code < 0) then
-      print("HTTP request failed :", code)
-    else
-      print(code, data)
-    end
-  end)
-    print(saida)
-    publica(cliente,"localizacao")
+      'Content-Type: application/json\r\n',saida,
+      function(code, data)
+        if (code < 0) then
+          print("HTTP request failed :", code)
+          texto="deu erro"
+        else
+          print(code, data)
+          texto=data
+        end
+      end)
+      publica(cliente, texto)
 end
-
-
-local meuid = "1221007"
-local m = mqtt.Client("clientid " .. meuid, 120)
 
 function publica(c, palavra)
   c:publish("apertou-tecla",palavra,0,0, 
@@ -76,7 +83,13 @@ gpio.mode(sw1,gpio.INT,gpio.PULLUP)
 gpio.mode(sw2,gpio.INT,gpio.PULLUP)
 
 function newpincb (sw)
-      publica(cliente, sw)
+  local delay = 500000
+  local now = tmr.now()
+  if now - last < delay then
+    return
+  end
+  last = now
+  wifi.sta.getap(listap)
 end
-gpio.trig(sw1, "down", newpincb(sw1))
-gpio.trig(sw2, "down", newpincb(sw2))
+gpio.trig(sw1, "down", newpincb)
+gpio.trig(sw2, "down", newpincb)

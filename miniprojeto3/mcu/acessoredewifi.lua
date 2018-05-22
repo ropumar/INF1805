@@ -7,4 +7,4 @@ wificonf = {
 
 wifi.sta.config(wificonf)
 print("modo: ".. wifi.setmode(wifi.STATION))
-print("IP = "..wifi.sta.getip())
+--print("IP = "..wifi.sta.getip())

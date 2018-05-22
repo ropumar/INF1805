@@ -14,7 +14,8 @@ http.post('https://www.googleapis.com/geolocation/v1/geolocate?key=AIzaSyC9gT96j
         "channel": 11},
       { "macAddress": "d0:d0:fd:39:c3:eb",
         "signalStrength": -66,
-        "channel": 9}
+        "channel": 9
+        }
     ]
   }
   ]],
