@@ -1,0 +1,155 @@
+#include "/home/terra/TerraNG/terra/TerraNet.defs"
+#define EVENTO_LED0 0
+#define EVENTO_LED1 1
+#define EVENTO_LED2 2
+#define MSG_TIPO_ROTA 1
+#define MSG_TIPO_CADEVC 2
+#define MSG_TIPO_LIGALED 3
+var short vValue;
+var short tValue;
+var short distancia =99;
+var short distanciaCADE =99;
+var short lValue;
+var byte flag=0;
+
+pktype msgGenerica from radioMsg with
+	var short distanciaFrente;
+	var short distanciaFrenteCADE;
+	var short proximosalto;
+	var short lus;
+	var ubyte temp;
+end
+
+var msgGenerica generica;
+var msgGenerica cadevc;
+var msgGenerica rota;
+var msgGenerica acende;
+
+
+par do
+	loop do
+		par/and do
+			emit REQ_VOLTS();
+			emit REQ_TEMP();
+			emit REQ_PHOTO();
+			vValue = await VOLTS;
+			tValue = await TEMP;
+			lValue = await PHOTO;
+			//no 11
+			if flag==0 then
+				if vValue > 1010 or vValue < 990 then
+					generica.lus=(lValue/10);
+					generica.temp=(tValue/10)%10;
+					generica.source = getNodeId();
+					generica.target = BROADCAST;
+					generica.type = MSG_TIPO_CADEVC;
+					generica.distanciaFrenteCADE=0;
+					qPut(generica); //cade vc?
+				end
+			end
+		with
+			await 1s;
+		end
+	end
+with
+	loop do
+		cadevc = await RECEIVE(MSG_TIPO_CADEVC);
+		if cadevc.lus == getNodeId() then //avisa a quem procura que estou aqui por uma rota
+			generica.lus=cadevc.lus;
+			generica.temp=cadevc.temp;
+			generica.source = getNodeId();
+			generica.target = BROADCAST;
+			generica.type = MSG_TIPO_ROTA ;
+			generica.proximosalto = generica.source;
+			generica.distanciaFrente = 0;
+			qPut(generica);
+		else/if cadevc.distanciaFrenteCADE<distanciaCADE  then //nao sou eu, continua
+			generica.lus=cadevc.lus;
+			generica.temp=cadevc.temp;
+			distanciaCADE = cadevc.distanciaFrenteCADE +1;
+			generica.distanciaFrenteCADE = distanciaCADE;
+			generica.source = getNodeId();
+			generica.type = MSG_TIPO_CADEVC;
+			generica.target = BROADCAST;
+			qPut(generica);
+		end
+	end
+with
+	loop do 
+		rota = await RECEIVE(MSG_TIPO_ROTA); 
+		if vValue > 1010 or vValue < 990 then //cheguei no cara que vc procura por aqui
+			generica.source = getNodeId();
+			generica.target = rota.proximosalto;
+			generica.type = MSG_TIPO_LIGALED;
+			generica.distanciaFrente=0;
+			qPut(generica);
+			flag=1;
+		else/if rota.distanciaFrente <distancia then //vamo achar a rota
+			distancia = rota.distanciaFrente +1;
+			generica.distanciaFrente = distancia;
+			generica.type = MSG_TIPO_ROTA;
+			generica.source = getNodeId();
+			generica.proximosalto=rota.source;
+			generica.target = BROADCAST;
+			qPut(generica);
+		
+		end
+	end	
+with
+	loop do
+		//vai direto ateh o cara e acende o LED
+		acende= await RECEIVE(MSG_TIPO_LIGALED);
+		if generica.lus ==getNodeId() then //eu sou o cara vou acender
+			emit LEDS(generica.temp);
+		else
+			emit LEDS(1); //acende a rota para mostrar
+			generica.source = getNodeId();
+			generica.target = generica.proximosalto; //me siga
+			generica.type = MSG_TIPO_LIGALED;
+			qPut(generica);
+		end
+	end
+with	// gerencia a fila de saída de mensagens
+	loop do
+		await Q_READY;
+		loop do
+			if qSize() == 0 then break; end
+			qGet(generica);
+			if generica.target == BROADCAST then
+				emit SEND(generica);
+				await SEND_DONE;
+			else	
+				loop i, 10 do
+				// faz 10 tentativas de enviar antes de desistir
+					var ubyte ack;
+					emit SEND_ACK(generica);
+					ack = await SEND_DONE_ACK;
+					if ack == TRUE then break; end
+					await (100 + random()/100)ms;
+				// tempo para outros nós transmitirem
+				end
+			end
+		end
+	end
+end
+
+
+///esse codigo abaixo comentado, serve para testar se a rota esta correta
+//iluminando os 8 nos vizinhos no sentido horario comecando comecando com a esquerda-cima
+			/*if (rota.source-getNodeId()==-11) then
+				emit LEDS(1);
+			else/if (rota.source-getNodeId()==-1) then
+				emit LEDS(2);
+			else/if (rota.source-getNodeId()==9) then
+				emit LEDS(3);
+			else/if (rota.source-getNodeId()==10) then
+				emit LEDS(4);
+			else/if (rota.source-getNodeId()==11) then
+				emit LEDS(5);
+			else/if (rota.source-getNodeId()==1) then
+				emit LEDS(6);
+			else/if (rota.source-getNodeId()==-9) then
+				emit LEDS(7);
+			else
+				emit LEDS(0);
+			end */
