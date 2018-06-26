@@ -108,11 +108,17 @@ function newplayer ()
     end
   end,
   keypressed = function (key)
-    if key == "right" then
+    if key == "right" or key=="d" then
       x = x + 10
     end
-    if key == "left" then
+    if key == "left" or key=="a" then
       x = x - 10
+    end
+    if key == "up" or key=="w"  then
+      y= y - 10
+    end
+    if key == "down" or key=="s"then
+      y = y + 10
     end
   end,
   affected = function (posx,posy)
@@ -124,7 +130,7 @@ function newplayer ()
       end
   end,
   draw = function ()
-    love.graphics.rectangle("fill", x, y, 30, 10)
+    love.graphics.rectangle("fill", x, y, 30, 30)
   end
   }
 end
