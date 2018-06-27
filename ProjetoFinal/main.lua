@@ -9,6 +9,7 @@ end
 
 function newbomb (vel, tx,ty)
   local x, y = tx,ty
+  local bi, bj = (tx+tamanho/2)/tamanho,(ty-10+tamanho/2)/tamanho
   --local atirou=false
   local tamx, tamy =tamanho/3,tamanho/3
   local pulse=0
@@ -28,13 +29,13 @@ function newbomb (vel, tx,ty)
         if pulse == 10 then self.explode = true end
         wait(vel,self)
       end
-      end),
+    end),
     isactive = (function (self)
         local now=love.timer.getTime()
         return (now>=self.timetowake)
       end),
       try = function ()
-        return x, y
+        return x, y, bi, bj
       end,
     draw = function ()
       love.graphics.circle("fill", x, y, tamx, tamy)
@@ -47,9 +48,10 @@ end
 function newplayer ()
   local width, height = love.graphics.getDimensions( )
   local x, y = 1.5* tamanho,10+1.5*tamanho
+  local posi, posj = 8,8
   return {
   try = function ()
-    return x , y
+    return x , y, posi, posj
   end,
   update = function (dt)
     if x > width then
@@ -66,17 +68,29 @@ function newplayer ()
     end
   end,
   keypressed = function (key)
-    if key == "right" or key=="d" then
-        x = x + tamanho/3
+    if listatile[(posi-posi%4)/4+1][(posj-posj%4)/4]==0 and (posj%4==0 or listatile[(posi-posi%4)/4+1][(posj-posj%4)/4+1]==0) then
+      if key == "right" or key=="d" then
+          x = x + tamanho/4
+          posi=posi+1
+      end
     end
-    if key == "left" or key=="a" then
-      x = x - tamanho/3
+    if listatile[(posi-1-(posi-1)%4)/4][(posj-posj%4)/4]==0 and (posj%4==0 or listatile[(posi-1-(posi-1)%4)/4][(posj-posj%4)/4-1]==0) then
+      if key == "left" or key=="a" then
+        x = x - tamanho/4
+        posi=posi-1
+      end
     end
-        if key == "down" or key=="s" then
-      y = y + tamanho/3
+    if listatile[(posi-posi%4)/4][(posj-posj%4)/4+1]==0 and (posi%4==0 or listatile[(posi-posi%4)/4+1][(posj-posj%4)/4+1]==0) then
+          if key == "down" or key=="s" then
+        y = y + tamanho/4
+        posj=posj+1
+      end
     end
-    if key == "up" or key=="w" then
-      y = y - tamanho/3
+    if listatile[(posi-posi%4)/4][(posj-1-(posj-1)%4)/4]==0 and (posi%4==0 or listatile[(posi-posi%4)/4-1][(posj-1-(posj-1)%4)/4]==0) then
+      if key == "up" or key=="w" then
+        y = y - tamanho/4
+        posj=posj-1
+      end
     end
   end,
   affected = function (posx,posy)
@@ -96,12 +110,21 @@ end
 
 function love.keypressed(key)
   if key == ' ' then
-    posx, posy = player.try()
-    --if player.nbombs <4 then
-      listabomb[player.nbombs] = newbomb(50,posx,posy)
-      listabomb[player.nbombs].atirou=true
-      player.nbombs=player.nbombs+1
-    --end
+    posx, posy, pi, pj = player.try()
+    if player.nbombs <4 then
+      if pi%4 >=2 then
+        pi=pi+4
+      end
+      if pj%4 >=2 then
+        pj=pj+4
+      end
+      if listatile[(pi-pi%4)/4][(pj-pj%4)/4]==0 then
+        listabomb[player.nbombs] = newbomb(50,((pi-pi%4)/4)*tamanho-tamanho/2,10+((pj-pj%4)/4)*tamanho-tamanho/2)
+        listabomb[player.nbombs].atirou=true
+        player.nbombs=player.nbombs+1
+        listatile[(pi-pi%4)/4][(pj-pj%4)/4]=2 --bomba
+      end
+    end
   end
     player.keypressed(key)
 end
@@ -167,7 +190,13 @@ function love.update(dt)
       end
     end
     for i in ipairs(listabomb) do
-      if listabomb[i].explode then table.remove(listabomb, i) player.nbombs=player.nbombs-1 end
+      if listabomb[i].explode then
+        _,_, pi, pj = listabomb[i].try()
+        print(pi,pj)
+        listatile[pi][pj] = 0 --vazio
+        table.remove(listabomb, i)
+        player.nbombs=player.nbombs-1
+        end
     end
 end
 
