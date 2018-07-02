@@ -3,7 +3,7 @@ function newparede (bx,by)
   return {
     draw = function ()
     love.graphics.rectangle("fill", x-tamanho/2, y-tamanho/2, tamanho, tamanho)
-  end
+  end,
   }
 end
 
@@ -13,7 +13,7 @@ function newbomb (vel, tx,ty)
   --local atirou=false
   local tamx, tamy =tamanho/3,tamanho/3
   local pulse=0
-  
+  explosionsize = player.explosionsize
   return {
     update = coroutine.wrap (function (self)
       
@@ -38,34 +38,36 @@ function newbomb (vel, tx,ty)
         return x, y, bi, bj
       end,
     draw = function ()
-      love.graphics.circle("fill", x, y, tamx, tamy)
+      if pulse<8 then
+        love.graphics.circle("fill", x, y, tamx, tamy)
+      else --eplosion drawing
+        love.graphics.setColor(100,100,0)
+        love.graphics.rectangle("fill", x-bi, y-bj, tamx, tamy)
+        love.graphics.rectangle("fill", x-bi, y-bj, explosionsize*tamanho, tamanho/3)
+        love.graphics.rectangle("fill", x-bi, y-bj, -explosionsize*tamanho, tamanho/3)
+        love.graphics.rectangle("fill", x-bi, y-bj, tamanho/3, explosionsize*tamanho)
+        love.graphics.rectangle("fill", x-bi, y-bj, tamanho/3, -explosionsize*tamanho)
+        love.graphics.setColor(255,255,255)
+      end
     end,
     timetowake=0,
     explode=false
   }
 end
 
-function newplayer ()
+
+function newplayer (number)
   local width, height = love.graphics.getDimensions( )
   local x, y = 1.5* tamanho,10+1.5*tamanho
   local posi, posj = 8,8
+  if number==2 then
+    x, y = tamanho/2+13*tamanho,10+tamanho/2+11*tamanho
+    posi, posj = 8,8
+  end
+
   return {
   try = function ()
     return x , y, posi, posj
-  end,
-  update = function (dt)
-    if x > width then
-      x = width
-    end
-    if y > height then
-      y = height
-    end
-    if y < 0 then
-      y= 0
-    end
-    if x < 0 then
-      x= 0
-    end
   end,
   keypressed = function (key)
     if listatile[(posi-posi%4)/4+1][(posj-posj%4)/4]==0 and (posj%4==0 or listatile[(posi-posi%4)/4+1][(posj-posj%4)/4+1]==0) then
@@ -102,9 +104,10 @@ function newplayer ()
       end
   end,
   draw = function ()
-    love.graphics.rectangle("line", x-tamanho/2, y-tamanho/2, tamanho, tamanho)
+    love.graphics.rectangle("fill", x-tamanho/2, y-tamanho/2, tamanho, tamanho)
   end,
-  nbombs=1
+  nbombs=1,
+  explosionsize=3
 }
 end
 
@@ -132,7 +135,7 @@ end
 function love.load()
   width, height = love.graphics.getDimensions( )
   tamanho=45
-  player =  newplayer()
+  player =  newplayer(1)
   pos = player.try()
   love.keyboard.setKeyRepeat(true)
   listabomb = {}
@@ -141,7 +144,10 @@ function love.load()
   for i=1,15 do
     listatile[i]={}
     for j=1,13 do
-      listatile[i][j] = 0 --vazio
+      listatile[i][j] = 3 --parede detruivel
+      if (i<4 and j<4) or (i>12 and j>10) then
+        listatile[i][j] = 0 --vazio
+      end
     end
   end
   
@@ -163,27 +169,37 @@ function love.load()
   end
   
   for i=1,15 do
+    listaparede[i]={}
     for j=1,13 do
-      if listatile[i][j] == 1 then
-        table.insert(listaparede,newparede(tamanho/2+(i-1)*tamanho,10+tamanho/2+(j-1)*tamanho))
-      end
+      listaparede[i][j]=newparede(tamanho/2+(i-1)*tamanho,10+tamanho/2+(j-1)*tamanho)
     end
   end
   
 end
 
 function love.draw()
-  player.draw()
+
+  for i=1,15 do
+    for j=1,13 do
+      if listatile[i][j] == 1 then
+        listaparede[i][j].draw()
+      end
+      if listatile[i][j] == 3 then
+        love.graphics.setColor(255,0,0)
+        listaparede[i][j].draw()
+        love.graphics.setColor(255,255,255)
+      end
+    end
+  end
   for i = 1,#listabomb do
     listabomb[i].draw()
   end
-  for i in ipairs(listaparede) do
-     listaparede[i].draw()
-  end
+  love.graphics.setColor(0,0,255)
+  player.draw()
+  love.graphics.setColor(255,255,255)
 end
 
 function love.update(dt)
-    player.update(dt)
     for i = 1,#listabomb do 
       if listabomb[i]:isactive() then
         listabomb[i]:update()
@@ -192,7 +208,44 @@ function love.update(dt)
     for i in ipairs(listabomb) do
       if listabomb[i].explode then
         _,_, pi, pj = listabomb[i].try()
+        _,_, p1i, p1j =player.try()
         print(pi,pj)
+        for i=1, player.explosionsize do
+          if (pi+i)<16 then
+            if listatile[pi+i][pj]==3 then
+              listatile[pi+i][pj] = 0 --vazio
+            elseif listatile[pi+i][pj]==1 then
+              break
+            end
+          end
+        end
+        for i=1,player.explosionsize do
+          if (pi-i)>0 then
+            if listatile[pi-i][pj]==3 then
+              listatile[pi-i][pj] = 0 --vazio
+            elseif listatile[pi-i][pj]==1 then
+              break
+            end
+          end
+        end
+        for i=1, player.explosionsize do
+          if (pj+i)<14 then
+            if listatile[pi][pj+i]==3 then
+              listatile[pi][pj+i] = 0 --vazio
+            elseif listatile[pi][pj+i]==1 then
+              break
+            end
+          end
+        end
+        for i=1, player.explosionsize do
+            if (pj-i)>0 then
+              if listatile[pi][pj-i]==3 then
+                listatile[pi][pj-i] = 0 --vazio
+              elseif listatile[pi][pj-i]==1 then
+                break
+              end
+            end
+        end
         listatile[pi][pj] = 0 --vazio
         table.remove(listabomb, i)
         player.nbombs=player.nbombs-1
