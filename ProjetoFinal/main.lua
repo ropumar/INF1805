@@ -25,11 +25,10 @@ end
 function newbomb (vel, tx,ty)
   local bombx, bomby = tx,ty
   local bombi, bombj = (tx+tamanho/2)/tamanho,(ty-10+tamanho/2)/tamanho
-  --local atirou=false
   local bombtamx, bombtamy =tamanho/3,tamanho/3
   local bombpulse=0
   local bombexplosionsize = player.explosionsize
-  expu,expd,expr,expl =0,0,0,0
+  local expu,expd,expr,expl =0,0,0,0
   listatile[bombi][bombj]=2 --bomba
   return {
     update = coroutine.wrap (function (self)
@@ -235,7 +234,6 @@ function love.keypressed(key)
         bx=((pi-pi%4)/4)*tamanho-tamanho/2
         by=10+((pj-pj%4)/4)*tamanho-tamanho/2
         table.insert(listabomb,1, newbomb(50,bx,by))
-        listabomb[1].atirou=true
         player.nbombs=player.nbombs+1
       end
     end
