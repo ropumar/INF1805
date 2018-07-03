@@ -27,7 +27,6 @@ function newbomb (vel, tx,ty)
   local bombi, bombj = (tx+tamanho/2)/tamanho,(ty-10+tamanho/2)/tamanho
   local bombtamx, bombtamy =tamanho/3,tamanho/3
   local bombpulse=0
-  local bombexplosionsize = player.explosionsize
   local expu,expd,expr,expl =0,0,0,0
   listatile[bombi][bombj]=2 --bomba
   return {
@@ -43,9 +42,9 @@ function newbomb (vel, tx,ty)
         bombpulse=bombpulse+1
         if bombpulse == 10 then self.explode = true end
         
-        if bombpulse==9 then
+        if bombpulse==8 then
         _,_,pi,pj=player.try()
-        for i=1, player.explosionsize do
+        for i=1,3 do
           if (bombi+i)<16 then
             if listatile[bombi+i][bombj]==3 then
               listatile[bombi+i][bombj] = 0 --vazio
@@ -62,7 +61,7 @@ function newbomb (vel, tx,ty)
             expr=i
           end
         end
-        for i=1,player.explosionsize do
+        for i=1,3 do
           if (bombi-i)>0 then
             if listatile[bombi-i][bombj]==3 then
               listatile[bombi-i][bombj] = 0 --vazio
@@ -79,7 +78,7 @@ function newbomb (vel, tx,ty)
             expl=i
           end
         end
-        for i=1, player.explosionsize do
+        for i=1, 3 do
           if (bombj+i)<14 then
             if listatile[bombi][bombj+i]==3 then
               listatile[bombi][bombj+i] = 0 --vazio
@@ -96,7 +95,7 @@ function newbomb (vel, tx,ty)
             expd=i
           end
         end
-        for i=1, player.explosionsize do
+        for i=1, 3 do
             if (bombj-i)>0 then
               if listatile[bombi][bombj-i]==3 then
                 listatile[bombi][bombj-i] = 0 --vazio
@@ -114,7 +113,6 @@ function newbomb (vel, tx,ty)
             end
         end
         listatile[bombi][bombj] = 0 --vazio
-        player.nbombs=player.nbombs-1
       end
         wait(vel,self)
       end
@@ -127,7 +125,7 @@ function newbomb (vel, tx,ty)
         return bombx, bomby, bombi, bombj
       end,
     draw = function ()
-      if bombpulse<9 then
+      if bombpulse<8 then
         love.graphics.circle("fill", bombx, bomby, bombtamx, bombtamy)
       else --eplosion drawing
         love.graphics.setColor(100,100,0)
@@ -189,7 +187,7 @@ function newplayer (number)
       end
     end
     if key == ' ' then
-    if player.nbombs <4 then
+    if 1 <4 then
       if playerposi%4 >=2 then
         playerposi=playerposi+4
       end
@@ -200,7 +198,9 @@ function newplayer (number)
         bx=((playerposi-playerposi%4)/4)*tamanho-tamanho/2
         by=10+((playerposj-playerposj%4)/4)*tamanho-tamanho/2
         table.insert(listabomb,1, newbomb(50,bx,by))
-        player.nbombs=player.nbombs+1
+        --player.nbombs=player.nbombs+1
+        print (bx)
+        print(by)
       end
     end
   end
@@ -208,8 +208,6 @@ function newplayer (number)
   draw = function ()
     love.graphics.rectangle("fill", playerx-tamanho/2, playery-tamanho/2, tamanho, tamanho)
   end,
-  nbombs=1,
-  explosionsize=3
 }
 end
 
@@ -236,7 +234,6 @@ end
 
 function love.load()
   numero = 1
-  update=1
   bx=0
   by=0
   mqtt_client = mqtt.client.create("test.mosquitto.org", 1883, mqttcb)
@@ -302,7 +299,7 @@ function love.draw()
         end
       end
     end
-    for i = 1,#listabomb do
+    for i in ipairs(listabomb) do
       listabomb[i].draw()
     end
     love.graphics.setColor(0,0,255)
@@ -322,7 +319,7 @@ function love.draw()
   end
 end
 
-function love.update(dt)
+function love.update()
     if gamestatus>0 then
       mqtt_client:handler()
       if controle==1 then
@@ -348,11 +345,9 @@ function love.update(dt)
     for i in ipairs(listabomb) do 
       if listabomb[i]:isactive() then
         listabomb[i]:update()
-      end
-    end
-    for i in ipairs(listabomb) do
-      if listabomb[i].explode then
-        table.remove(listabomb, i)
+        if listabomb[i].explode then
+          table.remove(listabomb, i)
+        end
       end
     end
 end
