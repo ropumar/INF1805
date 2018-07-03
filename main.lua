@@ -35,6 +35,7 @@ function newbomb (vel, tx,ty)
   listatile[bombi][bombj]=2 --bomba
   return {
     update = coroutine.wrap (function (self)
+      
       while(1) do
         if bombtamx==tamanho/3 then
           bombtamy=tamanho/2
@@ -46,7 +47,10 @@ function newbomb (vel, tx,ty)
         bombpulse=bombpulse+1
         if bombpulse == 10 then self.explode = true end
         
+        
         if bombpulse==9 then
+        --bombi=bombi-bombi%1
+        --bombj=bombj-bombj%1
         _,_,pi,pj=player.try()
         for i=1, player.explosionsize do
           if (bombi+i)<16 then
@@ -119,6 +123,7 @@ function newbomb (vel, tx,ty)
         listatile[bombi][bombj] = 0 --vazio
         player.nbombs=player.nbombs-1
       end
+      
         wait(vel,self)
       end
     end),
@@ -134,6 +139,8 @@ function newbomb (vel, tx,ty)
         love.graphics.circle("fill", bombx, bomby, bombtamx, bombtamy)
       else --eplosion drawing
         love.graphics.setColor(100,100,0)
+        --love.graphics.rectangle("fill", bombx-bombi, bomby-bombj, bombtamx, bombtamy)
+        print(expr)
         love.graphics.rectangle("fill", bombx-bombi, bomby-bombj, expr*tamanho, tamanho/3)
         love.graphics.rectangle("fill", bombx-bombi, bomby-bombj, -expl*tamanho, tamanho/3)
         love.graphics.rectangle("fill", bombx-bombi, bomby-bombj, tamanho/3, expd*tamanho)
@@ -365,7 +372,7 @@ function love.update(dt)
     end
     for i in ipairs(listabomb) do
       if listabomb[i].explode then
-        table.remove(listabomb, i)
+        table.remove(listabomb, j)
       end
     end
 end
