@@ -50,11 +50,11 @@ function newbomb (vel, tx,ty)
                 listatile[bombi+i][bombj] = 0 --vazio
                 expr=i
                 break
-              elseif listatile[bombi+i][bombj]==1 then
+              elseif listatile[bombi+i][bombj]==1 then --parede fixa
                 expr=i
                 break
               end
-              if bombi+i==(pi-pi%4)/4 and bombj==(pj-pj%4)/4 then
+              if bombi+i==(pi-pi%4)/4 and bombj==(pj-pj%4)/4 then --lugar vazio
                 gamestatus=2
                 print("gameover")
               end
@@ -257,7 +257,7 @@ function love.load()
     listatile[i]={}
     for j=1,13 do
       listatile[i][j] = 3 --parede detruivel
-      if (i<5 and j<5) or (i>11 and j>9) then
+      if (i<6 and j<6) or (i>10 and j>8) then
         listatile[i][j] = 0 --vazio
       end
     end
