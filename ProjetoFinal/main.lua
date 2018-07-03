@@ -187,7 +187,6 @@ function newplayer (number)
       end
     end
     if key == ' ' then
-    if 1 <4 then
       if playerposi%4 >=2 then
         playerposi=playerposi+4
       end
@@ -203,7 +202,15 @@ function newplayer (number)
         print(by)
       end
     end
-  end
+    if controle==1 then
+      string=string.format("{%.2f}{%.2f}{%.2f}{%.2f}{%.2f}{%.2f}",bx,by,player.try())
+      --print ("envia "..string)
+      mqtt_client:publish("player1", string)
+    else
+      string=string.format("{%.2f}{%.2f}{%.2f}{%.2f}{%.2f}{%.2f}",bx,by,player.try())
+      --print ("envia "..string)
+      mqtt_client:publish("player2", string)
+    end
   end,
   draw = function ()
     love.graphics.rectangle("fill", playerx-tamanho/2, playery-tamanho/2, tamanho, tamanho)
@@ -322,15 +329,6 @@ end
 function love.update()
     if gamestatus>0 then
       mqtt_client:handler()
-      if controle==1 then
-        string=string.format("{%.2f}{%.2f}{%.2f}{%.2f}{%.2f}{%.2f}",bx,by,player.try())
-        --print ("envia "..string)
-        mqtt_client:publish("player1", string)
-      else
-        string=string.format("{%.2f}{%.2f}{%.2f}{%.2f}{%.2f}{%.2f}",bx,by,player.try())
-        --print ("envia "..string)
-        mqtt_client:publish("player2", string)
-      end
       if(str~=nil) then
         playero.update(tonumber(str[3]),tonumber(str[4]),tonumber(str[5]),tonumber(str[6]))
         --print(numero)
@@ -353,7 +351,7 @@ function love.update()
     end
     for i in ipairs(listabomb) do
       if listabomb[i].explode then
-        table.remove(listabomb, j)
+        table.remove(listabomb, i)
       end
     end
 end
