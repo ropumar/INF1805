@@ -25,12 +25,17 @@ end
 function newbomb (vel, tx,ty)
   local bombx, bomby = tx,ty
   local bombi, bombj = (tx+tamanho/2)/tamanho,(ty-10+tamanho/2)/tamanho
+  --local atirou=false
   local bombtamx, bombtamy =tamanho/3,tamanho/3
   local bombpulse=0
-  local expu,expd,expr,expl =0,0,0,0
+  local bombexplosionsize = player.explosionsize
+  expu,expd,expr,expl =0,0,0,0
+  --bombi=bombi-bombi%1
+  --bombj=bombj-bombj%1
   listatile[bombi][bombj]=2 --bomba
   return {
     update = coroutine.wrap (function (self)
+      
       while(1) do
         if bombtamx==tamanho/3 then
           bombtamy=tamanho/2
@@ -42,78 +47,83 @@ function newbomb (vel, tx,ty)
         bombpulse=bombpulse+1
         if bombpulse == 10 then self.explode = true end
         
-        if bombpulse==8 then
-          _,_,pi,pj=player.try()
-          for i=1,3 do
-            if (bombi+i)<16 then
-              if listatile[bombi+i][bombj]==3 then
-                listatile[bombi+i][bombj] = 0 --vazio
-                expr=i
-                break
-              elseif listatile[bombi+i][bombj]==1 then
-                expr=i
-                break
-              end
-              if bombi+i==(pi-pi%4)/4 and bombj==(pj-pj%4)/4 then
-                gamestatus=2
-                print("gameover")
-              end
+        
+        if bombpulse==9 then
+        --bombi=bombi-bombi%1
+        --bombj=bombj-bombj%1
+        _,_,pi,pj=player.try()
+        for i=1, player.explosionsize do
+          if (bombi+i)<16 then
+            if listatile[bombi+i][bombj]==3 then
+              listatile[bombi+i][bombj] = 0 --vazio
               expr=i
+              break
+            elseif listatile[bombi+i][bombj]==1 then
+              expr=i
+              break
             end
-          end
-          for i=1,3 do
-            if (bombi-i)>0 then
-              if listatile[bombi-i][bombj]==3 then
-                listatile[bombi-i][bombj] = 0 --vazio
-                expl=i
-                break
-              elseif listatile[bombi-i][bombj]==1 then
-                expl=i
-                break
-              end
-              if bombi-i==(pi-pi%4)/4 and bombj==(pj-pj%4)/4 then
-                gamestatus=2
-                print("gameover")
-              end
-              expl=i
+            if bombi+i==(pi-pi%4)/4 and bombj==(pj-pj%4)/4 then
+              gamestatus=2
+              print("gameover")
             end
+            expr=i
           end
-          for i=1, 3 do
-            if (bombj+i)<14 then
-              if listatile[bombi][bombj+i]==3 then
-                listatile[bombi][bombj+i] = 0 --vazio
-                expd=i
-                break
-              elseif listatile[bombi][bombj+i]==1 then
-                expd=i
-                break
-              end
-              if bombi==(pi-pi%4)/4 and bombj+i==(pj-pj%4)/4 then
-                gamestatus=2
-                print("gameover")
-              end
-              expd=i
-            end
-          end
-          for i=1, 3 do
-              if (bombj-i)>0 then
-                if listatile[bombi][bombj-i]==3 then
-                  listatile[bombi][bombj-i] = 0 --vazio
-                  expu=i
-                  break
-                elseif listatile[bombi][bombj-i]==1 then
-                  expu=i
-                  break
-                end
-                if bombi==(pi-pi%4)/4 and bombj-i==(pj-pj%4)/4 then
-                  gamestatus=2
-                print("gameover")
-              end
-                expu=i
-              end
-          end
-          listatile[bombi][bombj] = 0 --vazio
         end
+        for i=1,player.explosionsize do
+          if (bombi-i)>0 then
+            if listatile[bombi-i][bombj]==3 then
+              listatile[bombi-i][bombj] = 0 --vazio
+              expl=i
+              break
+            elseif listatile[bombi-i][bombj]==1 then
+              expl=i
+              break
+            end
+            if bombi-i==(pi-pi%4)/4 and bombj==(pj-pj%4)/4 then
+              gamestatus=2
+              print("gameover")
+            end
+            expl=i
+          end
+        end
+        for i=1, player.explosionsize do
+          if (bombj+i)<14 then
+            if listatile[bombi][bombj+i]==3 then
+              listatile[bombi][bombj+i] = 0 --vazio
+              expd=i
+              break
+            elseif listatile[bombi][bombj+i]==1 then
+              expd=i
+              break
+            end
+            if bombi==(pi-pi%4)/4 and bombj+i==(pj-pj%4)/4 then
+              gamestatus=2
+              print("gameover")
+            end
+            expd=i
+          end
+        end
+        for i=1, player.explosionsize do
+            if (bombj-i)>0 then
+              if listatile[bombi][bombj-i]==3 then
+                listatile[bombi][bombj-i] = 0 --vazio
+                expu=i
+                break
+              elseif listatile[bombi][bombj-i]==1 then
+                expu=i
+                break
+              end
+              if bombi==(pi-pi%4)/4 and bombj-i==(pj-pj%4)/4 then
+                gamestatus=2
+              print("gameover")
+            end
+              expu=i
+            end
+        end
+        listatile[bombi][bombj] = 0 --vazio
+        player.nbombs=player.nbombs-1
+      end
+      
         wait(vel,self)
       end
     end),
@@ -125,10 +135,12 @@ function newbomb (vel, tx,ty)
         return bombx, bomby, bombi, bombj
       end,
     draw = function ()
-      if bombpulse<8 then
+      if bombpulse<9 then
         love.graphics.circle("fill", bombx, bomby, bombtamx, bombtamy)
       else --eplosion drawing
         love.graphics.setColor(100,100,0)
+        --love.graphics.rectangle("fill", bombx-bombi, bomby-bombj, bombtamx, bombtamy)
+        print(expr)
         love.graphics.rectangle("fill", bombx-bombi, bomby-bombj, expr*tamanho, tamanho/3)
         love.graphics.rectangle("fill", bombx-bombi, bomby-bombj, -expl*tamanho, tamanho/3)
         love.graphics.rectangle("fill", bombx-bombi, bomby-bombj, tamanho/3, expd*tamanho)
@@ -186,28 +198,20 @@ function newplayer (number)
         playerposj=playerposj-1
       end
     end
-    if key == ' ' then
-    if 1 <4 then
-      if playerposi%4 >=2 then
-        playerposi=playerposi+4
+  end,
+  affected = function (playerposx,playerposy)
+      if (playerposx>=playerx and playerposx<=playerx+30 and playerposy<= playery+10 and playerposy>= playery-10) then
+      -- "pegou" o jogador
+        return true
+      else
+        return false
       end
-      if playerposj%4 >=2 then
-        playerposj=playerposj+4
-      end
-      if listatile[(playerposi-playerposi%4)/4][(playerposj-playerposj%4)/4]==0 then
-        bx=((playerposi-playerposi%4)/4)*tamanho-tamanho/2
-        by=10+((playerposj-playerposj%4)/4)*tamanho-tamanho/2
-        table.insert(listabomb,1, newbomb(50,bx,by))
-        --player.nbombs=player.nbombs+1
-        print (bx)
-        print(by)
-      end
-    end
-  end
   end,
   draw = function ()
     love.graphics.rectangle("fill", playerx-tamanho/2, playery-tamanho/2, tamanho, tamanho)
   end,
+  nbombs=1,
+  explosionsize=3
 }
 end
 
@@ -227,6 +231,24 @@ function love.keypressed(key)
     player =  newplayer(2)
     playero=  newplayer(1)
   end
+  if key == ' ' and gamestatus==1 then
+    posx, posy, pi, pj = player.try()
+    if player.nbombs <4 then
+      if pi%4 >=2 then
+        pi=pi+4
+      end
+      if pj%4 >=2 then
+        pj=pj+4
+      end
+      if listatile[(pi-pi%4)/4][(pj-pj%4)/4]==0 then
+        bx=((pi-pi%4)/4)*tamanho-tamanho/2
+        by=10+((pj-pj%4)/4)*tamanho-tamanho/2
+        table.insert(listabomb,1, newbomb(50,bx,by))
+        listabomb[1].atirou=true
+        player.nbombs=player.nbombs+1
+      end
+    end
+  end
   if gamestatus==1 then
     player.keypressed(key)
   end
@@ -234,6 +256,7 @@ end
 
 function love.load()
   numero = 1
+  update=1
   bx=0
   by=0
   mqtt_client = mqtt.client.create("test.mosquitto.org", 1883, mqttcb)
@@ -250,7 +273,7 @@ function love.load()
     listatile[i]={}
     for j=1,13 do
       listatile[i][j] = 3 --parede detruivel
-      if (i<5 and j<5) or (i>11 and j>9) then
+      if (i<4 and j<4) or (i>12 and j>10) then
         listatile[i][j] = 0 --vazio
       end
     end
@@ -299,7 +322,7 @@ function love.draw()
         end
       end
     end
-    for i in ipairs(listabomb) do
+    for i = 1,#listabomb do
       listabomb[i].draw()
     end
     love.graphics.setColor(0,0,255)
@@ -319,7 +342,7 @@ function love.draw()
   end
 end
 
-function love.update()
+function love.update(dt)
     if gamestatus>0 then
       mqtt_client:handler()
       if controle==1 then
@@ -334,14 +357,10 @@ function love.update()
       if(str~=nil) then
         playero.update(tonumber(str[3]),tonumber(str[4]),tonumber(str[5]),tonumber(str[6]))
         --print(numero)
-        if(tonumber(str[1])~=0 and tonumber(str[2])~=0) then
-          if listatile[(tonumber(str[1])+tamanho/2)/tamanho][(tonumber(str[2])-10+tamanho/2)/tamanho]==0 then
-            table.insert(listabomb,newbomb(50,tonumber(str[1]),tonumber(str[2])))
-            --print(bx)
-            --print(by)
-            bx=0
-            by=0
-          end
+        if(tonumber(str[1])~=0 and tonumber(str[2])~=0) and listatile[(tonumber(str[1])+tamanho/2)/tamanho][(tonumber(str[2])-10+tamanho/2)/tamanho]==0 then
+          table.insert(listabomb,newbomb(50,tonumber(str[1]),tonumber(str[2])))
+          bx=0
+          by=0
         end
       end
     end
