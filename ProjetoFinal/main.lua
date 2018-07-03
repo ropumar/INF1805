@@ -198,19 +198,20 @@ function newplayer (number)
         by=10+((playerposj-playerposj%4)/4)*tamanho-tamanho/2
         table.insert(listabomb,1, newbomb(50,bx,by))
         --player.nbombs=player.nbombs+1
-        print (bx)
-        print(by)
       end
     end
     if controle==1 then
       string=string.format("{%.2f}{%.2f}{%.2f}{%.2f}{%.2f}{%.2f}",bx,by,player.try())
-      --print ("envia "..string)
+      bx=0
+      by=0
       mqtt_client:publish("player1", string)
     else
       string=string.format("{%.2f}{%.2f}{%.2f}{%.2f}{%.2f}{%.2f}",bx,by,player.try())
-      --print ("envia "..string)
+      bx=0
+      by=0
       mqtt_client:publish("player2", string)
     end
+    
   end,
   draw = function ()
     love.graphics.rectangle("fill", playerx-tamanho/2, playery-tamanho/2, tamanho, tamanho)
@@ -248,7 +249,6 @@ function love.load()
   tamanho=45
   controle=1
   gamestatus=0
-  --pos = player.try()
   love.keyboard.setKeyRepeat(true)
   listabomb = {}
   listatile={}
@@ -332,7 +332,7 @@ function love.update()
       if(str~=nil) then
         playero.update(tonumber(str[3]),tonumber(str[4]),tonumber(str[5]),tonumber(str[6]))
         --print(numero)
-        if(tonumber(str[1])~=0 and tonumber(str[2])~=0) then
+        if tonumber(str[1])~=0 or tonumber(str[2])~=0 then
           if listatile[(tonumber(str[1])+tamanho/2)/tamanho][(tonumber(str[2])-10+tamanho/2)/tamanho]==0 then
             table.insert(listabomb,newbomb(50,tonumber(str[1]),tonumber(str[2])))
             --print(bx)
