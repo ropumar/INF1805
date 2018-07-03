@@ -188,14 +188,22 @@ function newplayer (number)
         playerposj=playerposj-1
       end
     end
-  end,
-  affected = function (playerposx,playerposy)
-      if (playerposx>=playerx and playerposx<=playerx+30 and playerposy<= playery+10 and playerposy>= playery-10) then
-      -- "pegou" o jogador
-        return true
-      else
-        return false
+    if key == ' ' then
+    if player.nbombs <4 then
+      if playerposi%4 >=2 then
+        playerposi=playerposi+4
       end
+      if playerposj%4 >=2 then
+        playerposj=playerposj+4
+      end
+      if listatile[(playerposi-playerposi%4)/4][(playerposj-playerposj%4)/4]==0 then
+        bx=((playerposi-playerposi%4)/4)*tamanho-tamanho/2
+        by=10+((playerposj-playerposj%4)/4)*tamanho-tamanho/2
+        table.insert(listabomb,1, newbomb(50,bx,by))
+        player.nbombs=player.nbombs+1
+      end
+    end
+  end
   end,
   draw = function ()
     love.graphics.rectangle("fill", playerx-tamanho/2, playery-tamanho/2, tamanho, tamanho)
@@ -220,23 +228,6 @@ function love.keypressed(key)
     mqtt_client:subscribe({"player1"})
     player =  newplayer(2)
     playero=  newplayer(1)
-  end
-  if key == ' ' and gamestatus==1 then
-    posx, posy, pi, pj = player.try()
-    if player.nbombs <4 then
-      if pi%4 >=2 then
-        pi=pi+4
-      end
-      if pj%4 >=2 then
-        pj=pj+4
-      end
-      if listatile[(pi-pi%4)/4][(pj-pj%4)/4]==0 then
-        bx=((pi-pi%4)/4)*tamanho-tamanho/2
-        by=10+((pj-pj%4)/4)*tamanho-tamanho/2
-        table.insert(listabomb,1, newbomb(50,bx,by))
-        player.nbombs=player.nbombs+1
-      end
-    end
   end
   if gamestatus==1 then
     player.keypressed(key)
