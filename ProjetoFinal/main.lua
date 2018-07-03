@@ -43,77 +43,77 @@ function newbomb (vel, tx,ty)
         if bombpulse == 10 then self.explode = true end
         
         if bombpulse==8 then
-        _,_,pi,pj=player.try()
-        for i=1,3 do
-          if (bombi+i)<16 then
-            if listatile[bombi+i][bombj]==3 then
-              listatile[bombi+i][bombj] = 0 --vazio
-              expr=i
-              break
-            elseif listatile[bombi+i][bombj]==1 then
-              expr=i
-              break
-            end
-            if bombi+i==(pi-pi%4)/4 and bombj==(pj-pj%4)/4 then
-              gamestatus=2
-              print("gameover")
-            end
-            expr=i
-          end
-        end
-        for i=1,3 do
-          if (bombi-i)>0 then
-            if listatile[bombi-i][bombj]==3 then
-              listatile[bombi-i][bombj] = 0 --vazio
-              expl=i
-              break
-            elseif listatile[bombi-i][bombj]==1 then
-              expl=i
-              break
-            end
-            if bombi-i==(pi-pi%4)/4 and bombj==(pj-pj%4)/4 then
-              gamestatus=2
-              print("gameover")
-            end
-            expl=i
-          end
-        end
-        for i=1, 3 do
-          if (bombj+i)<14 then
-            if listatile[bombi][bombj+i]==3 then
-              listatile[bombi][bombj+i] = 0 --vazio
-              expd=i
-              break
-            elseif listatile[bombi][bombj+i]==1 then
-              expd=i
-              break
-            end
-            if bombi==(pi-pi%4)/4 and bombj+i==(pj-pj%4)/4 then
-              gamestatus=2
-              print("gameover")
-            end
-            expd=i
-          end
-        end
-        for i=1, 3 do
-            if (bombj-i)>0 then
-              if listatile[bombi][bombj-i]==3 then
-                listatile[bombi][bombj-i] = 0 --vazio
-                expu=i
+          _,_,pi,pj=player.try()
+          for i=1,3 do
+            if (bombi+i)<16 then
+              if listatile[bombi+i][bombj]==3 then
+                listatile[bombi+i][bombj] = 0 --vazio
+                expr=i
                 break
-              elseif listatile[bombi][bombj-i]==1 then
-                expu=i
+              elseif listatile[bombi+i][bombj]==1 then
+                expr=i
                 break
               end
-              if bombi==(pi-pi%4)/4 and bombj-i==(pj-pj%4)/4 then
+              if bombi+i==(pi-pi%4)/4 and bombj==(pj-pj%4)/4 then
                 gamestatus=2
-              print("gameover")
+                print("gameover")
+              end
+              expr=i
             end
-              expu=i
+          end
+          for i=1,3 do
+            if (bombi-i)>0 then
+              if listatile[bombi-i][bombj]==3 then
+                listatile[bombi-i][bombj] = 0 --vazio
+                expl=i
+                break
+              elseif listatile[bombi-i][bombj]==1 then
+                expl=i
+                break
+              end
+              if bombi-i==(pi-pi%4)/4 and bombj==(pj-pj%4)/4 then
+                gamestatus=2
+                print("gameover")
+              end
+              expl=i
             end
+          end
+          for i=1, 3 do
+            if (bombj+i)<14 then
+              if listatile[bombi][bombj+i]==3 then
+                listatile[bombi][bombj+i] = 0 --vazio
+                expd=i
+                break
+              elseif listatile[bombi][bombj+i]==1 then
+                expd=i
+                break
+              end
+              if bombi==(pi-pi%4)/4 and bombj+i==(pj-pj%4)/4 then
+                gamestatus=2
+                print("gameover")
+              end
+              expd=i
+            end
+          end
+          for i=1, 3 do
+              if (bombj-i)>0 then
+                if listatile[bombi][bombj-i]==3 then
+                  listatile[bombi][bombj-i] = 0 --vazio
+                  expu=i
+                  break
+                elseif listatile[bombi][bombj-i]==1 then
+                  expu=i
+                  break
+                end
+                if bombi==(pi-pi%4)/4 and bombj-i==(pj-pj%4)/4 then
+                  gamestatus=2
+                print("gameover")
+              end
+                expu=i
+              end
+          end
+          listatile[bombi][bombj] = 0 --vazio
         end
-        listatile[bombi][bombj] = 0 --vazio
-      end
         wait(vel,self)
       end
     end),
@@ -250,7 +250,7 @@ function love.load()
     listatile[i]={}
     for j=1,13 do
       listatile[i][j] = 3 --parede detruivel
-      if (i<4 and j<4) or (i>12 and j>10) then
+      if (i<5 and j<5) or (i>11 and j>9) then
         listatile[i][j] = 0 --vazio
       end
     end
@@ -336,6 +336,8 @@ function love.update()
         --print(numero)
         if(tonumber(str[1])~=0 and tonumber(str[2])~=0) then
           table.insert(listabomb,newbomb(50,tonumber(str[1]),tonumber(str[2])))
+          --print(bx)
+          --print(by)
           bx=0
           by=0
         end
