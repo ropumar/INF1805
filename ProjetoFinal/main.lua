@@ -30,8 +30,6 @@ function newbomb (vel, tx,ty)
   local bombpulse=0
   local bombexplosionsize = player.explosionsize
   expu,expd,expr,expl =0,0,0,0
-  --bombi=bombi-bombi%1
-  --bombj=bombj-bombj%1
   listatile[bombi][bombj]=2 --bomba
   return {
     update = coroutine.wrap (function (self)
